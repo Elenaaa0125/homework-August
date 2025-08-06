@@ -55,9 +55,9 @@ Output (P₂):
 ## 4. 实验结果
 
 ### 4.1 协议执行流程示例
-![协议执行流程图](./images/protocol_flow.png)  
+![协议执行流程图](./result1.png)  
 *图1：协议初始化*
 
 ### 4.2 性能测试结果
-![性能测试图](./images/performance.png)  
+![性能测试图](./result2.png)  
 *图2：交互流程及运行结果*
