@@ -8,8 +8,8 @@ from PIL import Image
 
 class DCTWatermark:
     def __init__(self, strength=0.1):
-        self.strength = max(0.01, min(strength, 0.3))  # 限制强度范围在0.01-0.3之间
-
+        self.strength = max(0.01, min(strength, 0.3))  
+        
     def _get_dct_blocks(self, img):
         """将图像分割为8x8块并进行DCT变换"""
         h, w = img.shape
@@ -127,7 +127,7 @@ class DCTWatermark:
 
 
 def robustness_test(watermarker, original_img, watermark_img):
-    """测试水印鲁棒性（已修复PIL/OpenCV类型转换问题）"""
+    """测试水印鲁棒性"""
     # 嵌入水印（确保是numpy数组）
     wm_img = watermarker.embed(original_img, watermark_img)
 
@@ -169,8 +169,6 @@ def robustness_test(watermarker, original_img, watermark_img):
 
     return results
 
-
-# ====================== 使用示例 ======================
 if __name__ == '__main__':
     # 初始化水印系统
     watermarker = DCTWatermark(strength=0.25)
@@ -181,7 +179,7 @@ if __name__ == '__main__':
 
     # 嵌入水印
     host_img = r'D:\pythonProject4\pexels-clarissa-roley-139936449-33334417.jpg'
-    watermark_img = r'D:\pythonProject4\watermark_square.png'  # 二值水印图片(建议64x64左右)
+    watermark_img = r'D:\pythonProject4\watermark_square.png'  # 二值水印图片
     watermarked = watermarker.embed(host_img, watermark_img, r'D:\pythonProject4\watermarked_lena.jpg')
 
     # 提取水印
@@ -192,4 +190,5 @@ if __name__ == '__main__':
     test_results = robustness_test(watermarker, host_img, watermark_img)
     print("\n鲁棒性测试结果:")
     for attack, score in test_results.items():
+
         print(f"{attack}: {score:.2%}")
