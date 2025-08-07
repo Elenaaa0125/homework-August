@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <emmintrin.h>
 
-// ·ÀÖ¹±àÒëÆ÷ÓÅ»¯µô¹Ø¼ü²Ù×÷
+// é˜²æ­¢ç¼–è¯‘å™¨ä¼˜åŒ–æ‰å…³é”®æ“ä½œ
 volatile uint8_t prevent_optimization;
 
 // trival SM4 based on Sbox
@@ -50,23 +50,23 @@ uint32_t CK[32] = {
 uint8_t* T_func(uint8_t* x) {
     static uint8_t result[4];
 
-    // SºĞ´ú»»
+    // Sç›’ä»£æ¢
     uint8_t b[4];
     for (int i = 0; i < 4; ++i) {
         b[i] = Sbox[x[i]];
     }
 
-    // ½«4×Ö½Ú×éºÏ³É32Î»×Ö£¨´ó¶ËĞò£©
+    // å°†4å­—èŠ‚ç»„åˆæˆ32ä½å­—ï¼ˆå¤§ç«¯åºï¼‰
     uint32_t word = (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3];
 
-    // ÏßĞÔ±ä»»L: Ñ­»·×óÒÆ²¢Òì»ò
+    // çº¿æ€§å˜æ¢L: å¾ªç¯å·¦ç§»å¹¶å¼‚æˆ–
     uint32_t L = word
-        ^ ((word << 2) | (word >> 30))   // Ñ­»·×óÒÆ2Î»
-        ^ ((word << 10) | (word >> 22))  // Ñ­»·×óÒÆ10Î»
-        ^ ((word << 18) | (word >> 14))  // Ñ­»·×óÒÆ18Î»
-        ^ ((word << 24) | (word >> 8));  // Ñ­»·×óÒÆ24Î»
+        ^ ((word << 2) | (word >> 30))   // å¾ªç¯å·¦ç§»2ä½
+        ^ ((word << 10) | (word >> 22))  // å¾ªç¯å·¦ç§»10ä½
+        ^ ((word << 18) | (word >> 14))  // å¾ªç¯å·¦ç§»18ä½
+        ^ ((word << 24) | (word >> 8));  // å¾ªç¯å·¦ç§»24ä½
 
-    // ½«32Î»½á¹û²ğ·ÖÎª4×Ö½Ú
+    // å°†32ä½ç»“æœæ‹†åˆ†ä¸º4å­—èŠ‚
     result[0] = (L >> 24) & 0xFF;
     result[1] = (L >> 16) & 0xFF;
     result[2] = (L >> 8) & 0xFF;
@@ -86,21 +86,21 @@ uint8_t* SM4Round(uint8_t x1[4], uint8_t x2[4], uint8_t x3[4], uint8_t x4[4], ui
 uint32_t T_Kgen(uint32_t K) {
     static uint8_t A[4];
     static uint8_t B[4];
-    // ½«32Î»½á¹û²ğ·ÖÎª4×Ö½Ú
+    // å°†32ä½ç»“æœæ‹†åˆ†ä¸º4å­—èŠ‚
     A[0] = (K >> 24) & 0xFF;
     A[1] = (K >> 16) & 0xFF;
     A[2] = (K >> 8) & 0xFF;
     A[3] = K & 0xFF;
-    // SºĞ´ú»»
+    // Sç›’ä»£æ¢
     for (int i = 0; i < 4; ++i) {
         B[i] = Sbox[A[i]];
     }
-    // ½«4×Ö½Ú×éºÏ³É32Î»×Ö£¨´ó¶ËĞò£©
+    // å°†4å­—èŠ‚ç»„åˆæˆ32ä½å­—ï¼ˆå¤§ç«¯åºï¼‰
     uint32_t word = (B[0] << 24) | (B[1] << 16) | (B[2] << 8) | B[3];
-    // ÏßĞÔ±ä»»L: Ñ­»·×óÒÆ²¢Òì»ò
+    // çº¿æ€§å˜æ¢L: å¾ªç¯å·¦ç§»å¹¶å¼‚æˆ–
     uint32_t L = word
-        ^ ((word << 13) | (word >> 19))   // Ñ­»·×óÒÆ13Î»
-        ^ ((word << 23) | (word >> 9));  // Ñ­»·×óÒÆ23Î»
+        ^ ((word << 13) | (word >> 19))   // å¾ªç¯å·¦ç§»13ä½
+        ^ ((word << 23) | (word >> 9));  // å¾ªç¯å·¦ç§»23ä½
     return L;
 }
 
@@ -154,31 +154,31 @@ void SM4Encrypt(uint8_t* input, uint8_t* output, uint32_t rk[32]) {
     // End of the Encryption
 }
 
-//ÓÅ»¯
+//ä¼˜åŒ–
 #include <iostream>
 #include <cstdint>
 
-// Ô¤¼ÆËãT-table
+// é¢„è®¡ç®—T-table
 uint32_t T_table[256];
 
-// ³õÊ¼»¯T-table
+// åˆå§‹åŒ–T-table
 void init_T_table() {
     for (int i = 0; i < 256; ++i) {
         uint8_t b = Sbox[i];
-        uint32_t word = b << 24; // Ïàµ±ÓÚbÔÚ×î¸ß×Ö½ÚÎ»ÖÃ
+        uint32_t word = b << 24; // ç›¸å½“äºbåœ¨æœ€é«˜å­—èŠ‚ä½ç½®
 
-        // ÏßĞÔ±ä»»L
+        // çº¿æ€§å˜æ¢L
         uint32_t L = word
-            ^ ((word << 2) | (word >> 30))   // Ñ­»·×óÒÆ2Î»
-            ^ ((word << 10) | (word >> 22))  // Ñ­»·×óÒÆ10Î»
-            ^ ((word << 18) | (word >> 14))  // Ñ­»·×óÒÆ18Î»
-            ^ ((word << 24) | (word >> 8));  // Ñ­»·×óÒÆ24Î»
+            ^ ((word << 2) | (word >> 30))   // å¾ªç¯å·¦ç§»2ä½
+            ^ ((word << 10) | (word >> 22))  // å¾ªç¯å·¦ç§»10ä½
+            ^ ((word << 18) | (word >> 14))  // å¾ªç¯å·¦ç§»18ä½
+            ^ ((word << 24) | (word >> 8));  // å¾ªç¯å·¦ç§»24ä½
 
         T_table[i] = L;
     }
 }
 
-// ÓÅ»¯ºóµÄT_funcÊ¹ÓÃT-table
+// ä¼˜åŒ–åçš„T_funcä½¿ç”¨T-table
 uint32_t T_func_optimized(uint32_t word) {
     uint32_t result = 0;
     result ^= T_table[(word >> 24) & 0xFF];
@@ -188,28 +188,28 @@ uint32_t T_func_optimized(uint32_t word) {
     return result;
 }
 
-// ÓÅ»¯ºóµÄÂÖº¯Êı
+// ä¼˜åŒ–åçš„è½®å‡½æ•°
 uint32_t SM4Round_optimized(uint32_t x1, uint32_t x2, uint32_t x3, uint32_t x4, uint32_t rk) {
     return x1 ^ T_func_optimized(x2 ^ x3 ^ x4 ^ rk);
 }
 
-// ÓÅ»¯ºóµÄ¼ÓÃÜº¯Êı
+// ä¼˜åŒ–åçš„åŠ å¯†å‡½æ•°
 void SM4Encrypt_optimized(const uint8_t* input, uint8_t* output, const uint32_t rk[32]) {
-    // ³õÊ¼»¯T-table (Êµ¼ÊÓ¦ÓÃÖĞÖ»Ğè³õÊ¼»¯Ò»´Î)
+    // åˆå§‹åŒ–T-table (å®é™…åº”ç”¨ä¸­åªéœ€åˆå§‹åŒ–ä¸€æ¬¡)
     static bool table_initialized = false;
     if (!table_initialized) {
         init_T_table();
         table_initialized = true;
     }
 
-    // ½«ÊäÈë×ª»»Îª32Î»×Ö (´ó¶ËĞò)
+    // å°†è¾“å…¥è½¬æ¢ä¸º32ä½å­— (å¤§ç«¯åº)
     uint32_t x[36];
     x[0] = (input[0] << 24) | (input[1] << 16) | (input[2] << 8) | input[3];
     x[1] = (input[4] << 24) | (input[5] << 16) | (input[6] << 8) | input[7];
     x[2] = (input[8] << 24) | (input[9] << 16) | (input[10] << 8) | input[11];
     x[3] = (input[12] << 24) | (input[13] << 16) | (input[14] << 8) | input[15];
 
-    // 32ÂÖ¼ÓÃÜ (²¿·ÖÕ¹¿ª)
+    // 32è½®åŠ å¯† (éƒ¨åˆ†å±•å¼€)
     for (int i = 0; i < 32; i += 4) {
         x[i + 4] = SM4Round_optimized(x[i], x[i + 1], x[i + 2], x[i + 3], rk[i]);
         x[i + 5] = SM4Round_optimized(x[i + 1], x[i + 2], x[i + 3], x[i + 4], rk[i + 1]);
@@ -217,7 +217,7 @@ void SM4Encrypt_optimized(const uint8_t* input, uint8_t* output, const uint32_t 
         x[i + 7] = SM4Round_optimized(x[i + 3], x[i + 4], x[i + 5], x[i + 6], rk[i + 3]);
     }
 
-    // ·´Ğò±ä»»²¢Êä³ö
+    // ååºå˜æ¢å¹¶è¾“å‡º
     uint32_t out0 = x[35], out1 = x[34], out2 = x[33], out3 = x[32];
     output[0] = (out0 >> 24) & 0xFF;
     output[1] = (out0 >> 16) & 0xFF;
@@ -245,7 +245,7 @@ void SM4Encrypt_optimized(const uint8_t* input, uint8_t* output, const uint32_t 
 #include <random>
 #include <iomanip>
 
-// Éú³ÉËæ»úÊı¾İÌî³ä»º³åÇø
+// ç”Ÿæˆéšæœºæ•°æ®å¡«å……ç¼“å†²åŒº
 void generate_random_data(uint8_t* data, size_t size) {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -256,16 +256,16 @@ void generate_random_data(uint8_t* data, size_t size) {
     }
 }
 
-// »ù×¼²âÊÔº¯Êı
+// åŸºå‡†æµ‹è¯•å‡½æ•°
 
 
 
 void benchmark_SM4() {
     constexpr int WARMUP_ITERATIONS = 100;
     constexpr int TEST_ITERATIONS = 10000;
-    constexpr int BLOCK_SIZE = 16; // SM4¿é´óĞ¡
+    constexpr int BLOCK_SIZE = 16; // SM4å—å¤§å°
 
-    // ×¼±¸²âÊÔÊı¾İ
+    // å‡†å¤‡æµ‹è¯•æ•°æ®
     uint32_t rk[32];
     RoundKeyGen(rk, Key);
 
@@ -273,7 +273,7 @@ void benchmark_SM4() {
     uint8_t ciphertext[BLOCK_SIZE];
     uint8_t decrypted[BLOCK_SIZE];
 
-    // ×¼±¸´ó»º³åÇøÓÃÓÚÍÌÍÂÁ¿²âÊÔ
+    // å‡†å¤‡å¤§ç¼“å†²åŒºç”¨äºååé‡æµ‹è¯•
     constexpr size_t LARGE_BUFFER_SIZE = 1024 * 1024; // 1MB
     uint8_t* large_plain = new uint8_t[LARGE_BUFFER_SIZE];
     uint8_t* large_cipher = new uint8_t[LARGE_BUFFER_SIZE];
@@ -281,24 +281,24 @@ void benchmark_SM4() {
 
     generate_random_data(large_plain, LARGE_BUFFER_SIZE);
 
-    // Ô¤ÈÈ
+    // é¢„çƒ­
     for (int i = 0; i < WARMUP_ITERATIONS; ++i) {
         SM4Encrypt(plaintext, ciphertext, rk);
-        prevent_optimization = ciphertext[0]; // ·ÀÖ¹ÓÅ»¯
+        prevent_optimization = ciphertext[0]; // é˜²æ­¢ä¼˜åŒ–
     }
 
-    // ²âÊÔµ¥´Î¼ÓÃÜÑÓ³Ù
+    // æµ‹è¯•å•æ¬¡åŠ å¯†å»¶è¿Ÿ
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < TEST_ITERATIONS; ++i) {
         SM4Encrypt(plaintext, ciphertext, rk);
-        prevent_optimization ^= ciphertext[0]; // ·ÀÖ¹ÓÅ»¯
+        prevent_optimization ^= ciphertext[0]; // é˜²æ­¢ä¼˜åŒ–
     }
     auto end = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     double avg_encrypt_ns = static_cast<double>(duration) / TEST_ITERATIONS;
 
-    // ²âÊÔµ¥´Î½âÃÜÑÓ³Ù
+    // æµ‹è¯•å•æ¬¡è§£å¯†å»¶è¿Ÿ
     uint32_t decrypt_rk[32];
     for (int i = 0; i < 32; ++i) {
         decrypt_rk[i] = rk[31 - i];
@@ -307,14 +307,14 @@ void benchmark_SM4() {
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < TEST_ITERATIONS; ++i) {
         SM4Encrypt(ciphertext, decrypted, decrypt_rk);
-        prevent_optimization ^= decrypted[0]; // ·ÀÖ¹ÓÅ»¯
+        prevent_optimization ^= decrypted[0]; // é˜²æ­¢ä¼˜åŒ–
     }
     end = std::chrono::high_resolution_clock::now();
 
     duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     double avg_decrypt_ns = static_cast<double>(duration) / TEST_ITERATIONS;
 
-    // ²âÊÔÍÌÍÂÁ¿ (1MBÊı¾İ¼ÓÃÜ)
+    // æµ‹è¯•ååé‡ (1MBæ•°æ®åŠ å¯†)
     const int blocks = LARGE_BUFFER_SIZE / BLOCK_SIZE;
 
     start = std::chrono::high_resolution_clock::now();
@@ -327,7 +327,7 @@ void benchmark_SM4() {
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     double encrypt_throughput = (LARGE_BUFFER_SIZE / (1024.0 * 1024.0)) / (duration / 1000000.0);
 
-    // ²âÊÔÍÌÍÂÁ¿ (1MBÊı¾İ½âÃÜ)
+    // æµ‹è¯•ååé‡ (1MBæ•°æ®è§£å¯†)
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < blocks; ++i) {
         SM4Encrypt(large_cipher + i * BLOCK_SIZE,
@@ -338,22 +338,22 @@ void benchmark_SM4() {
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     double decrypt_throughput = (LARGE_BUFFER_SIZE / (1024.0 * 1024.0)) / (duration / 1000000.0);
 
-    // ÇåÀíÄÚ´æ
+    // æ¸…ç†å†…å­˜
     delete[] large_plain;
     delete[] large_cipher;
     delete[] large_decrypted;
 
     std::cout << "===============================\n";
 
-    std::cout << "ÓÅ»¯Ç°ĞÔÄÜ²âÊÔ:\n\n";
+    std::cout << "ä¼˜åŒ–å‰æ€§èƒ½æµ‹è¯•:\n\n";
 
-    std::cout << "µ¥´Î²Ù×÷ÑÓ³Ù:\n";
-    std::cout << "  ¼ÓÃÜ: " << std::fixed << std::setprecision(2) << avg_encrypt_ns << " ns\n";
-    std::cout << "  ½âÃÜ: " << std::fixed << std::setprecision(2) << avg_decrypt_ns << " ns\n\n";
+    std::cout << "å•æ¬¡æ“ä½œå»¶è¿Ÿ:\n";
+    std::cout << "  åŠ å¯†: " << std::fixed << std::setprecision(2) << avg_encrypt_ns << " ns\n";
+    std::cout << "  è§£å¯†: " << std::fixed << std::setprecision(2) << avg_decrypt_ns << " ns\n\n";
 
-    std::cout << "ÍÌÍÂÁ¿ (1MBÊı¾İ):\n";
-    std::cout << "  ¼ÓÃÜ: " << std::fixed << std::setprecision(2) << encrypt_throughput << " MB/s\n";
-    std::cout << "  ½âÃÜ: " << std::fixed << std::setprecision(2) << decrypt_throughput << " MB/s\n";
+    std::cout << "ååé‡ (1MBæ•°æ®):\n";
+    std::cout << "  åŠ å¯†: " << std::fixed << std::setprecision(2) << encrypt_throughput << " MB/s\n";
+    std::cout << "  è§£å¯†: " << std::fixed << std::setprecision(2) << decrypt_throughput << " MB/s\n";
 
 }
 
@@ -366,9 +366,9 @@ void benchmark_SM4() {
 void benchmark_SM4_opt() {
     constexpr int WARMUP_ITERATIONS = 100;
     constexpr int TEST_ITERATIONS = 10000;
-    constexpr int BLOCK_SIZE = 16; // SM4¿é´óĞ¡
+    constexpr int BLOCK_SIZE = 16; // SM4å—å¤§å°
 
-    // ×¼±¸²âÊÔÊı¾İ
+    // å‡†å¤‡æµ‹è¯•æ•°æ®
     uint32_t rk[32];
     RoundKeyGen(rk, Key);
 
@@ -376,7 +376,7 @@ void benchmark_SM4_opt() {
     uint8_t ciphertext[BLOCK_SIZE];
     uint8_t decrypted[BLOCK_SIZE];
 
-    // ×¼±¸´ó»º³åÇøÓÃÓÚÍÌÍÂÁ¿²âÊÔ
+    // å‡†å¤‡å¤§ç¼“å†²åŒºç”¨äºååé‡æµ‹è¯•
     constexpr size_t LARGE_BUFFER_SIZE = 1024 * 1024; // 1MB
     uint8_t* large_plain = new uint8_t[LARGE_BUFFER_SIZE];
     uint8_t* large_cipher = new uint8_t[LARGE_BUFFER_SIZE];
@@ -384,24 +384,24 @@ void benchmark_SM4_opt() {
 
     generate_random_data(large_plain, LARGE_BUFFER_SIZE);
 
-    // Ô¤ÈÈ
+    // é¢„çƒ­
     for (int i = 0; i < WARMUP_ITERATIONS; ++i) {
         SM4Encrypt_optimized(plaintext, ciphertext, rk);
-        prevent_optimization = ciphertext[0]; // ·ÀÖ¹ÓÅ»¯
+        prevent_optimization = ciphertext[0]; // é˜²æ­¢ä¼˜åŒ–
     }
 
-    // ²âÊÔµ¥´Î¼ÓÃÜÑÓ³Ù
+    // æµ‹è¯•å•æ¬¡åŠ å¯†å»¶è¿Ÿ
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < TEST_ITERATIONS; ++i) {
         SM4Encrypt_optimized(plaintext, ciphertext, rk);
-        prevent_optimization ^= ciphertext[0]; // ·ÀÖ¹ÓÅ»¯
+        prevent_optimization ^= ciphertext[0]; // é˜²æ­¢ä¼˜åŒ–
     }
     auto end = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     double avg_encrypt_ns = static_cast<double>(duration) / TEST_ITERATIONS;
 
-    // ²âÊÔµ¥´Î½âÃÜÑÓ³Ù
+    // æµ‹è¯•å•æ¬¡è§£å¯†å»¶è¿Ÿ
     uint32_t decrypt_rk[32];
     for (int i = 0; i < 32; ++i) {
         decrypt_rk[i] = rk[31 - i];
@@ -410,14 +410,14 @@ void benchmark_SM4_opt() {
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < TEST_ITERATIONS; ++i) {
         SM4Encrypt_optimized(ciphertext, decrypted, decrypt_rk);
-        prevent_optimization ^= decrypted[0]; // ·ÀÖ¹ÓÅ»¯
+        prevent_optimization ^= decrypted[0]; // é˜²æ­¢ä¼˜åŒ–
     }
     end = std::chrono::high_resolution_clock::now();
 
     duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     double avg_decrypt_ns = static_cast<double>(duration) / TEST_ITERATIONS;
 
-    // ²âÊÔÍÌÍÂÁ¿ (1MBÊı¾İ¼ÓÃÜ)
+    // æµ‹è¯•ååé‡ (1MBæ•°æ®åŠ å¯†)
     const int blocks = LARGE_BUFFER_SIZE / BLOCK_SIZE;
 
     start = std::chrono::high_resolution_clock::now();
@@ -430,7 +430,7 @@ void benchmark_SM4_opt() {
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     double encrypt_throughput = (LARGE_BUFFER_SIZE / (1024.0 * 1024.0)) / (duration / 1000000.0);
 
-    // ²âÊÔÍÌÍÂÁ¿ (1MBÊı¾İ½âÃÜ)
+    // æµ‹è¯•ååé‡ (1MBæ•°æ®è§£å¯†)
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < blocks; ++i) {
         SM4Encrypt_optimized(large_cipher + i * BLOCK_SIZE,
@@ -441,22 +441,22 @@ void benchmark_SM4_opt() {
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     double decrypt_throughput = (LARGE_BUFFER_SIZE / (1024.0 * 1024.0)) / (duration / 1000000.0);
 
-    // ÇåÀíÄÚ´æ
+    // æ¸…ç†å†…å­˜
     delete[] large_plain;
     delete[] large_cipher;
     delete[] large_decrypted;
 
     std::cout << "===============================\n";
 
-    std::cout << "ÓÅ»¯ºóĞÔÄÜ²âÊÔ:\n\n";
+    std::cout << "ä¼˜åŒ–åæ€§èƒ½æµ‹è¯•:\n\n";
 
-    std::cout << "µ¥´Î²Ù×÷ÑÓ³Ù:\n";
-    std::cout << "  ¼ÓÃÜ: " << std::fixed << std::setprecision(2) << avg_encrypt_ns << " ns\n";
-    std::cout << "  ½âÃÜ: " << std::fixed << std::setprecision(2) << avg_decrypt_ns << " ns\n\n";
+    std::cout << "å•æ¬¡æ“ä½œå»¶è¿Ÿ:\n";
+    std::cout << "  åŠ å¯†: " << std::fixed << std::setprecision(2) << avg_encrypt_ns << " ns\n";
+    std::cout << "  è§£å¯†: " << std::fixed << std::setprecision(2) << avg_decrypt_ns << " ns\n\n";
 
-    std::cout << "ÍÌÍÂÁ¿ (1MBÊı¾İ):\n";
-    std::cout << "  ¼ÓÃÜ: " << std::fixed << std::setprecision(2) << encrypt_throughput << " MB/s\n";
-    std::cout << "  ½âÃÜ: " << std::fixed << std::setprecision(2) << decrypt_throughput << " MB/s\n";
+    std::cout << "ååé‡ (1MBæ•°æ®):\n";
+    std::cout << "  åŠ å¯†: " << std::fixed << std::setprecision(2) << encrypt_throughput << " MB/s\n";
+    std::cout << "  è§£å¯†: " << std::fixed << std::setprecision(2) << decrypt_throughput << " MB/s\n";
 
 }
 
@@ -468,29 +468,29 @@ int main()
     RoundKeyGen(rk, Key);
     uint8_t output[16];
     SM4Encrypt(Plaintext, output, rk);
-    std::cout << "¼ÓÃÜ½á¹û: ";
+    std::cout << "åŠ å¯†ç»“æœ: ";
     for (int i = 0; i < 16; ++i) {
         std::cout << std::hex << (int)output[i] << " ";
     }
     std::cout << std::endl;
 
-    /// ÄæĞò½âÃÜ
+    /// é€†åºè§£å¯†
     uint32_t rk2[32];
     for (int i = 0; i < 32; ++i) {
         rk2[i] = rk[31 - i];
     }
     uint8_t PLT[16];
     SM4Encrypt(output, PLT, rk2);
-    std::cout << "½âÃÜ½á¹û: ";
+    std::cout << "è§£å¯†ç»“æœ: ";
     for (int i = 0; i < 16; ++i) {
         std::cout << std::hex << (int)PLT[i] << " ";
     }
     std::cout << std::endl;
 
-    // ÔËĞĞĞÔÄÜ²âÊÔ
+    // è¿è¡Œæ€§èƒ½æµ‹è¯•
     benchmark_SM4();
 
-    //ÓÅ»¯ºóµÄĞÔÄÜ²âÊÔ
+    //ä¼˜åŒ–åçš„æ€§èƒ½æµ‹è¯•
     benchmark_SM4_opt();
     return 0;
 }
