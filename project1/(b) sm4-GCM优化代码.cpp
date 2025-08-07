@@ -8,10 +8,10 @@
 #include <random>
 #include <iomanip>
 
-// ·ÀÖ¹±àÒëÆ÷ÓÅ»¯
+// é˜²æ­¢ç¼–è¯‘å™¨ä¼˜åŒ–
 volatile uint8_t prevent_optimization;
 
-// ==================== Ô­Ê¼SM4ÊµÏÖ ====================
+// ==================== åŸå§‹SM4å®ç° ====================
 uint8_t Sbox[256] = {
     0xd6, 0x90, 0xe9, 0xfe, 0xcc, 0xe1, 0x3d, 0xb7, 0x16, 0xb6, 0x14, 0xc2, 0x28, 0xfb, 0x2c, 0x05,
     0x2b, 0x67, 0x9a, 0x76, 0x2a, 0xbe, 0x04, 0xc3, 0xaa, 0x44, 0x13, 0x26, 0x49, 0x86, 0x06, 0x99,
@@ -41,7 +41,7 @@ uint32_t CK[32] = {
     0xa0a7aeb5, 0xbcc3cad1, 0xd8dfe6ed, 0xf4fb0209,
     0x10171e25, 0x2c333a41, 0x484f565d, 0x646b7279
 };
-// ¸¨Öúº¯Êı
+// è¾…åŠ©å‡½æ•°
 void xor_block(const uint8_t* a, const uint8_t* b, uint8_t* out, size_t len) {
     for (size_t i = 0; i < len; i++) {
         out[i] = a[i] ^ b[i];
@@ -85,22 +85,22 @@ void RoundKeyGen(uint32_t rk[32], const uint8_t key[16]) {
 void SM4_Encrypt_Block(const uint8_t* input, uint8_t* output, const uint32_t rk[32]) {
     uint32_t x[36];
 
-    // ³õÊ¼»¯
+    // åˆå§‹åŒ–
     for (int i = 0; i < 4; ++i) {
         x[i] = (input[i * 4] << 24) | (input[i * 4 + 1] << 16) | (input[i * 4 + 2] << 8) | input[i * 4 + 3];
     }
 
-    // 32ÂÖ¼ÓÃÜ
+    // 32è½®åŠ å¯†
     for (int i = 0; i < 32; ++i) {
         uint32_t temp = x[i + 1] ^ x[i + 2] ^ x[i + 3] ^ rk[i];
 
-        // SºĞÌæ»»
+        // Sç›’æ›¿æ¢
         uint32_t sbox_out = (Sbox[(temp >> 24) & 0xFF] << 24) |
             (Sbox[(temp >> 16) & 0xFF] << 16) |
             (Sbox[(temp >> 8) & 0xFF] << 8) |
             Sbox[temp & 0xFF];
 
-        // ÏßĞÔ±ä»»L
+        // çº¿æ€§å˜æ¢L
         uint32_t L = sbox_out ^ ((sbox_out << 2) | (sbox_out >> 30)) ^
             ((sbox_out << 10) | (sbox_out >> 22)) ^
             ((sbox_out << 18) | (sbox_out >> 14)) ^
@@ -109,7 +109,7 @@ void SM4_Encrypt_Block(const uint8_t* input, uint8_t* output, const uint32_t rk[
         x[i + 4] = x[i] ^ L;
     }
 
-    // ·´ĞòÊä³ö
+    // ååºè¾“å‡º
     for (int i = 0; i < 4; ++i) {
         output[i] = (x[35 - i] >> 24) & 0xFF;
         output[i + 4] = (x[35 - i] >> 16) & 0xFF;
@@ -118,18 +118,18 @@ void SM4_Encrypt_Block(const uint8_t* input, uint8_t* output, const uint32_t rk[
     }
 }
 
-// ==================== SM4-GCMÊµÏÖ ====================
+// ==================== SM4-GCMå®ç° ====================
 
-// GCMÉÏÏÂÎÄ½á¹¹
+// GCMä¸Šä¸‹æ–‡ç»“æ„
 typedef struct {
     uint8_t H[16];          // E_k(0^128)
-    uint8_t J0[16];         // ³õÊ¼¼ÆÊıÆ÷
-    uint8_t key[16];        // ¼ÓÃÜÃÜÔ¿
-    uint32_t rk[32];        // ÂÖÃÜÔ¿
-    uint64_t ghash_table[16][256]; // GF(2^128)³Ë·¨±í
+    uint8_t J0[16];         // åˆå§‹è®¡æ•°å™¨
+    uint8_t key[16];        // åŠ å¯†å¯†é’¥
+    uint32_t rk[32];        // è½®å¯†é’¥
+    uint64_t ghash_table[16][256]; // GF(2^128)ä¹˜æ³•è¡¨
 } sm4_gcm_ctx;
 
-// ¼ò»¯µÄGF(2^8)³Ë·¨
+// ç®€åŒ–çš„GF(2^8)ä¹˜æ³•
 uint8_t gmul(uint8_t a, uint8_t b) {
     uint8_t p = 0;
     for (int i = 0; i < 8; ++i) {
@@ -142,18 +142,18 @@ uint8_t gmul(uint8_t a, uint8_t b) {
     return p;
 }
 
-// ³õÊ¼»¯GHASH³Ë·¨±í
+// åˆå§‹åŒ–GHASHä¹˜æ³•è¡¨
 void init_ghash_table(const uint8_t H[16], uint64_t table[16][256]) {
     uint8_t tmp[16] = { 0 };
     uint8_t product[16] = { 0 };
 
-    // Ô¤¼ÆËãËùÓĞ¿ÉÄÜµÄ³Ë·¨½á¹û
+    // é¢„è®¡ç®—æ‰€æœ‰å¯èƒ½çš„ä¹˜æ³•ç»“æœ
     for (int i = 0; i < 16; ++i) {
         for (int j = 0; j < 256; ++j) {
             memset(tmp, 0, 16);
             tmp[i] = j;
 
-            // ¼ò»¯µÄGF(2^128)³Ë·¨
+            // ç®€åŒ–çš„GF(2^128)ä¹˜æ³•
             memset(product, 0, 16);
             for (int k = 0; k < 16; ++k) {
                 if (tmp[k]) {
@@ -163,20 +163,20 @@ void init_ghash_table(const uint8_t H[16], uint64_t table[16][256]) {
                 }
             }
 
-            // ´æ´¢µ½±íÖĞ
+            // å­˜å‚¨åˆ°è¡¨ä¸­
             memcpy(&table[i][j], product, 16);
         }
     }
 }
 
-// ¼ÆÊıÆ÷µİÔö
+// è®¡æ•°å™¨é€’å¢
 void increment_ctr(uint8_t ctr[16]) {
     for (int i = 15; i >= 0; --i) {
         if (++ctr[i] != 0) break;
     }
 }
 
-// ÓÅ»¯Ç°µÄGHASHÊµÏÖ£¨»ù´¡°æ±¾£©
+// ä¼˜åŒ–å‰çš„GHASHå®ç°ï¼ˆåŸºç¡€ç‰ˆæœ¬ï¼‰
 void ghash_basic(const uint8_t H[16],
     const uint8_t* aad, size_t aad_len,
     const uint8_t* ciphertext, size_t ct_len,
@@ -184,14 +184,14 @@ void ghash_basic(const uint8_t H[16],
     uint8_t X[16] = { 0 };
     size_t i;
 
-    // ´¦ÀíAAD
+    // å¤„ç†AAD
     for (i = 0; i < aad_len; i += 16) {
         size_t block_len = (aad_len - i) < 16 ? (aad_len - i) : 16;
         uint8_t block[16] = { 0 };
         memcpy(block, aad + i, block_len);
         xor_block(X, block, X, 16);
 
-        // GF(2^128)³Ë·¨
+        // GF(2^128)ä¹˜æ³•
         uint8_t Z[16] = { 0 };
         for (int k = 0; k < 16; ++k) {
             if (X[k]) {
@@ -203,14 +203,14 @@ void ghash_basic(const uint8_t H[16],
         memcpy(X, Z, 16);
     }
 
-    // ´¦ÀíÃÜÎÄ
+    // å¤„ç†å¯†æ–‡
     for (i = 0; i < ct_len; i += 16) {
         size_t block_len = (ct_len - i) < 16 ? (ct_len - i) : 16;
         uint8_t block[16] = { 0 };
         memcpy(block, ciphertext + i, block_len);
         xor_block(X, block, X, 16);
 
-        // GF(2^128)³Ë·¨
+        // GF(2^128)ä¹˜æ³•
         uint8_t Z[16] = { 0 };
         for (int k = 0; k < 16; ++k) {
             if (X[k]) {
@@ -222,13 +222,13 @@ void ghash_basic(const uint8_t H[16],
         memcpy(X, Z, 16);
     }
 
-    // ´¦Àí³¤¶È¿é
+    // å¤„ç†é•¿åº¦å—
     uint8_t len_block[16] = { 0 };
     *((uint64_t*)len_block + 0) = aad_len * 8;
     *((uint64_t*)len_block + 1) = ct_len * 8;
     xor_block(X, len_block, X, 16);
 
-    // GF(2^128)³Ë·¨
+    // GF(2^128)ä¹˜æ³•
     uint8_t Z[16] = { 0 };
     for (int k = 0; k < 16; ++k) {
         if (X[k]) {
@@ -240,7 +240,7 @@ void ghash_basic(const uint8_t H[16],
     memcpy(output, Z, 16);
 }
 
-// ÓÅ»¯ºóµÄGHASHÊµÏÖ£¨²é±í·¨£©
+// ä¼˜åŒ–åçš„GHASHå®ç°ï¼ˆæŸ¥è¡¨æ³•ï¼‰
 void ghash_optimized(const uint64_t table[16][256],
     const uint8_t* aad, size_t aad_len,
     const uint8_t* ciphertext, size_t ct_len,
@@ -248,7 +248,7 @@ void ghash_optimized(const uint64_t table[16][256],
     uint64_t X[2] = { 0 };
     size_t i;
 
-    // ´¦ÀíAAD
+    // å¤„ç†AAD
     for (i = 0; i < aad_len; i += 16) {
         size_t block_len = (aad_len - i) < 16 ? (aad_len - i) : 16;
         uint8_t block[16] = { 0 };
@@ -261,7 +261,7 @@ void ghash_optimized(const uint64_t table[16][256],
         }
     }
 
-    // ´¦ÀíÃÜÎÄ
+    // å¤„ç†å¯†æ–‡
     for (i = 0; i < ct_len; i += 16) {
         size_t block_len = (ct_len - i) < 16 ? (ct_len - i) : 16;
         uint8_t block[16] = { 0 };
@@ -274,7 +274,7 @@ void ghash_optimized(const uint64_t table[16][256],
         }
     }
 
-    // ´¦Àí³¤¶È¿é
+    // å¤„ç†é•¿åº¦å—
     uint8_t len_block[16] = { 0 };
     *((uint64_t*)len_block + 0) = aad_len * 8;
     *((uint64_t*)len_block + 1) = ct_len * 8;
@@ -288,29 +288,29 @@ void ghash_optimized(const uint64_t table[16][256],
     memcpy(output, X, 16);
 }
 
-// ³õÊ¼»¯SM4-GCMÉÏÏÂÎÄ
+// åˆå§‹åŒ–SM4-GCMä¸Šä¸‹æ–‡
 void sm4_gcm_init(sm4_gcm_ctx* ctx, const uint8_t* key, const uint8_t* iv, size_t iv_len, bool use_optimization) {
-    // 1. ±£´æÃÜÔ¿²¢Éú³ÉÂÖÃÜÔ¿
+    // 1. ä¿å­˜å¯†é’¥å¹¶ç”Ÿæˆè½®å¯†é’¥
     memcpy(ctx->key, key, 16);
     RoundKeyGen(ctx->rk, key);
 
-    // 2. ¼ÆËãH = SM4_Encrypt(key, 0^128)
+    // 2. è®¡ç®—H = SM4_Encrypt(key, 0^128)
     memset(ctx->H, 0, 16);
     SM4_Encrypt_Block(ctx->H, ctx->H, ctx->rk);
 
-    // 3. ³õÊ¼»¯GHASH³Ë·¨±í£¨½öÔÚÓÅ»¯°æ±¾ÖĞÊ¹ÓÃ£©
+    // 3. åˆå§‹åŒ–GHASHä¹˜æ³•è¡¨ï¼ˆä»…åœ¨ä¼˜åŒ–ç‰ˆæœ¬ä¸­ä½¿ç”¨ï¼‰
     if (use_optimization) {
         init_ghash_table(ctx->H, ctx->ghash_table);
     }
 
-    // 4. Éú³ÉJ0¼ÆÊıÆ÷
+    // 4. ç”ŸæˆJ0è®¡æ•°å™¨
     if (iv_len == 12) {
         memcpy(ctx->J0, iv, 12);
         memset(ctx->J0 + 12, 0, 3);
         ctx->J0[15] = 1;
     }
     else {
-        // ¶ÔÓÚ·Ç12×Ö½ÚIV£¬ĞèÒªGHASH´¦Àí
+        // å¯¹äºé12å­—èŠ‚IVï¼Œéœ€è¦GHASHå¤„ç†
         memset(ctx->J0, 0, 16);
         size_t iv_blocks = (iv_len + 15) / 16;
 
@@ -344,7 +344,7 @@ void sm4_gcm_init(sm4_gcm_ctx* ctx, const uint8_t* key, const uint8_t* iv, size_
             }
         }
 
-        // ´¦Àí³¤¶È¿é
+        // å¤„ç†é•¿åº¦å—
         uint8_t len_block[16] = { 0 };
         *((uint64_t*)len_block + 1) = iv_len * 8;
 
@@ -372,7 +372,7 @@ void sm4_gcm_init(sm4_gcm_ctx* ctx, const uint8_t* key, const uint8_t* iv, size_
     }
 }
 
-// SM4-GCM¼ÓÃÜ£¨»ù´¡°æ±¾£©
+// SM4-GCMåŠ å¯†ï¼ˆåŸºç¡€ç‰ˆæœ¬ï¼‰
 void sm4_gcm_encrypt_basic(sm4_gcm_ctx* ctx,
     const uint8_t* plaintext, size_t pt_len,
     uint8_t* ciphertext,
@@ -382,31 +382,31 @@ void sm4_gcm_encrypt_basic(sm4_gcm_ctx* ctx,
     uint8_t keystream[16];
     size_t i;
 
-    // 1. ³õÊ¼»¯¼ÆÊıÆ÷
+    // 1. åˆå§‹åŒ–è®¡æ•°å™¨
     memcpy(ctr, ctx->J0, 16);
     increment_ctr(ctr);
 
-    // 2. CTRÄ£Ê½¼ÓÃÜ
+    // 2. CTRæ¨¡å¼åŠ å¯†
     for (i = 0; i < pt_len; i += 16) {
-        // Éú³ÉÃÜÔ¿Á÷
+        // ç”Ÿæˆå¯†é’¥æµ
         SM4_Encrypt_Block(ctr, keystream, ctx->rk);
         increment_ctr(ctr);
 
-        // ¼ÓÃÜµ±Ç°¿é
+        // åŠ å¯†å½“å‰å—
         size_t block_len = (pt_len - i) < 16 ? (pt_len - i) : 16;
         xor_block(plaintext + i, keystream, ciphertext + i, block_len);
     }
 
-    // 3. ¼ÆËãÈÏÖ¤±êÇ©
+    // 3. è®¡ç®—è®¤è¯æ ‡ç­¾
     uint8_t auth_tag[16];
     ghash_basic(ctx->H, aad, aad_len, ciphertext, pt_len, auth_tag);
 
-    // 4. ¼ÓÃÜÈÏÖ¤±êÇ©
+    // 4. åŠ å¯†è®¤è¯æ ‡ç­¾
     SM4_Encrypt_Block(ctx->J0, tag, ctx->rk);
     xor_block(tag, auth_tag, tag, 16);
 }
 
-// SM4-GCM¼ÓÃÜ£¨ÓÅ»¯°æ±¾£©
+// SM4-GCMåŠ å¯†ï¼ˆä¼˜åŒ–ç‰ˆæœ¬ï¼‰
 void sm4_gcm_encrypt_optimized(sm4_gcm_ctx* ctx,
     const uint8_t* plaintext, size_t pt_len,
     uint8_t* ciphertext,
@@ -416,31 +416,31 @@ void sm4_gcm_encrypt_optimized(sm4_gcm_ctx* ctx,
     uint8_t keystream[16];
     size_t i;
 
-    // 1. ³õÊ¼»¯¼ÆÊıÆ÷
+    // 1. åˆå§‹åŒ–è®¡æ•°å™¨
     memcpy(ctr, ctx->J0, 16);
     increment_ctr(ctr);
 
-    // 2. CTRÄ£Ê½¼ÓÃÜ
+    // 2. CTRæ¨¡å¼åŠ å¯†
     for (i = 0; i < pt_len; i += 16) {
-        // Éú³ÉÃÜÔ¿Á÷
+        // ç”Ÿæˆå¯†é’¥æµ
         SM4_Encrypt_Block(ctr, keystream, ctx->rk);
         increment_ctr(ctr);
 
-        // ¼ÓÃÜµ±Ç°¿é
+        // åŠ å¯†å½“å‰å—
         size_t block_len = (pt_len - i) < 16 ? (pt_len - i) : 16;
         xor_block(plaintext + i, keystream, ciphertext + i, block_len);
     }
 
-    // 3. ¼ÆËãÈÏÖ¤±êÇ©
+    // 3. è®¡ç®—è®¤è¯æ ‡ç­¾
     uint8_t auth_tag[16];
     ghash_optimized(ctx->ghash_table, aad, aad_len, ciphertext, pt_len, auth_tag);
 
-    // 4. ¼ÓÃÜÈÏÖ¤±êÇ©
+    // 4. åŠ å¯†è®¤è¯æ ‡ç­¾
     SM4_Encrypt_Block(ctx->J0, tag, ctx->rk);
     xor_block(tag, auth_tag, tag, 16);
 }
 
-// SM4-GCM½âÃÜ£¨»ù´¡°æ±¾£©
+// SM4-GCMè§£å¯†ï¼ˆåŸºç¡€ç‰ˆæœ¬ï¼‰
 void sm4_gcm_decrypt_basic(sm4_gcm_ctx* ctx,
     const uint8_t* ciphertext, size_t ct_len,
     uint8_t* plaintext,
@@ -450,27 +450,27 @@ void sm4_gcm_decrypt_basic(sm4_gcm_ctx* ctx,
     uint8_t keystream[16];
     size_t i;
 
-    // 1. ³õÊ¼»¯¼ÆÊıÆ÷
+    // 1. åˆå§‹åŒ–è®¡æ•°å™¨
     memcpy(ctr, ctx->J0, 16);
     increment_ctr(ctr);
 
-    // 2. CTRÄ£Ê½½âÃÜ
+    // 2. CTRæ¨¡å¼è§£å¯†
     for (i = 0; i < ct_len; i += 16) {
-        // Éú³ÉÃÜÔ¿Á÷
+        // ç”Ÿæˆå¯†é’¥æµ
         SM4_Encrypt_Block(ctr, keystream, ctx->rk);
         increment_ctr(ctr);
 
-        // ½âÃÜµ±Ç°¿é
+        // è§£å¯†å½“å‰å—
         size_t block_len = (ct_len - i) < 16 ? (ct_len - i) : 16;
         xor_block(ciphertext + i, keystream, plaintext + i, block_len);
     }
 
-    // 3. ÑéÖ¤±êÇ©
+    // 3. éªŒè¯æ ‡ç­¾
     uint8_t computed_tag[16];
     ghash_basic(ctx->H, aad, aad_len, ciphertext, ct_len, computed_tag);
     SM4_Encrypt_Block(ctx->J0, computed_tag, ctx->rk);
 
-    // ±È½Ï±êÇ©
+    // æ¯”è¾ƒæ ‡ç­¾
     bool auth_ok = true;
     for (int j = 0; j < 16; ++j) {
         if (computed_tag[j] != tag[j]) {
@@ -480,11 +480,11 @@ void sm4_gcm_decrypt_basic(sm4_gcm_ctx* ctx,
     }
 
     if (!auth_ok) {
-        memset(plaintext, 0, ct_len); // ÈÏÖ¤Ê§°ÜÊ±Çå¿ÕÃ÷ÎÄ
+        memset(plaintext, 0, ct_len); // è®¤è¯å¤±è´¥æ—¶æ¸…ç©ºæ˜æ–‡
     }
 }
 
-// SM4-GCM½âÃÜ£¨ÓÅ»¯°æ±¾£©
+// SM4-GCMè§£å¯†ï¼ˆä¼˜åŒ–ç‰ˆæœ¬ï¼‰
 void sm4_gcm_decrypt_optimized(sm4_gcm_ctx* ctx,
     const uint8_t* ciphertext, size_t ct_len,
     uint8_t* plaintext,
@@ -494,27 +494,27 @@ void sm4_gcm_decrypt_optimized(sm4_gcm_ctx* ctx,
     uint8_t keystream[16];
     size_t i;
 
-    // 1. ³õÊ¼»¯¼ÆÊıÆ÷
+    // 1. åˆå§‹åŒ–è®¡æ•°å™¨
     memcpy(ctr, ctx->J0, 16);
     increment_ctr(ctr);
 
-    // 2. CTRÄ£Ê½½âÃÜ
+    // 2. CTRæ¨¡å¼è§£å¯†
     for (i = 0; i < ct_len; i += 16) {
-        // Éú³ÉÃÜÔ¿Á÷
+        // ç”Ÿæˆå¯†é’¥æµ
         SM4_Encrypt_Block(ctr, keystream, ctx->rk);
         increment_ctr(ctr);
 
-        // ½âÃÜµ±Ç°¿é
+        // è§£å¯†å½“å‰å—
         size_t block_len = (ct_len - i) < 16 ? (ct_len - i) : 16;
         xor_block(ciphertext + i, keystream, plaintext + i, block_len);
     }
 
-    // 3. ÑéÖ¤±êÇ©
+    // 3. éªŒè¯æ ‡ç­¾
     uint8_t computed_tag[16];
     ghash_optimized(ctx->ghash_table, aad, aad_len, ciphertext, ct_len, computed_tag);
     SM4_Encrypt_Block(ctx->J0, computed_tag, ctx->rk);
 
-    // ±È½Ï±êÇ©
+    // æ¯”è¾ƒæ ‡ç­¾
     bool auth_ok = true;
     for (int j = 0; j < 16; ++j) {
         if (computed_tag[j] != tag[j]) {
@@ -524,13 +524,13 @@ void sm4_gcm_decrypt_optimized(sm4_gcm_ctx* ctx,
     }
 
     if (!auth_ok) {
-        memset(plaintext, 0, ct_len); // ÈÏÖ¤Ê§°ÜÊ±Çå¿ÕÃ÷ÎÄ
+        memset(plaintext, 0, ct_len); // è®¤è¯å¤±è´¥æ—¶æ¸…ç©ºæ˜æ–‡
     }
 }
 
-// ==================== ²âÊÔ´úÂë ====================
+// ==================== æµ‹è¯•ä»£ç  ====================
 
-// Éú³ÉËæ»úÊı¾İ
+// ç”Ÿæˆéšæœºæ•°æ®
 void generate_random_data(uint8_t* data, size_t size) {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -541,19 +541,19 @@ void generate_random_data(uint8_t* data, size_t size) {
     }
 }
 
-// ĞÔÄÜ²âÊÔº¯Êı
+// æ€§èƒ½æµ‹è¯•å‡½æ•°
 void benchmark_sm4_gcm() {
     const int WARMUP_ITERATIONS = 100;
     const int TEST_ITERATIONS = 1000;
-    const size_t SMALL_DATA_SIZE = 64;    // 64×Ö½ÚĞ¡Êı¾İ²âÊÔ
-    const size_t LARGE_DATA_SIZE = 1024 * 1024; // 1MB´óÊı¾İ²âÊÔ
+    const size_t SMALL_DATA_SIZE = 64;    // 64å­—èŠ‚å°æ•°æ®æµ‹è¯•
+    const size_t LARGE_DATA_SIZE = 1024 * 1024; // 1MBå¤§æ•°æ®æµ‹è¯•
 
-    // ×¼±¸²âÊÔÊı¾İ
+    // å‡†å¤‡æµ‹è¯•æ•°æ®
     uint8_t key[16] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
                       0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
     uint8_t iv[12] = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
                      0x99, 0xaa, 0xbb, 0xcc };
-    uint8_t aad[32] = { 0 }; // 32×Ö½Ú¸½¼ÓÈÏÖ¤Êı¾İ
+    uint8_t aad[32] = { 0 }; // 32å­—èŠ‚é™„åŠ è®¤è¯æ•°æ®
 
     uint8_t* small_plain = new uint8_t[SMALL_DATA_SIZE];
     uint8_t* small_cipher_basic = new uint8_t[SMALL_DATA_SIZE];
@@ -574,16 +574,16 @@ void benchmark_sm4_gcm() {
 
     sm4_gcm_ctx ctx_basic, ctx_opt;
 
-    // ³õÊ¼»¯ÉÏÏÂÎÄ
-    sm4_gcm_init(&ctx_basic, key, iv, 12, false); // »ù´¡°æ±¾
-    sm4_gcm_init(&ctx_opt, key, iv, 12, true);    // ÓÅ»¯°æ±¾
+    // åˆå§‹åŒ–ä¸Šä¸‹æ–‡
+    sm4_gcm_init(&ctx_basic, key, iv, 12, false); // åŸºç¡€ç‰ˆæœ¬
+    sm4_gcm_init(&ctx_opt, key, iv, 12, true);    // ä¼˜åŒ–ç‰ˆæœ¬
 
-    std::cout << "================ SM4-GCM ĞÔÄÜ²âÊÔ ================\n";
+    std::cout << "================ SM4-GCM æ€§èƒ½æµ‹è¯• ================\n";
 
-    // ========== Ğ¡Êı¾İ²âÊÔ ==========
-    std::cout << "\nĞ¡Êı¾İ²âÊÔ (64×Ö½Ú):\n";
+    // ========== å°æ•°æ®æµ‹è¯• ==========
+    std::cout << "\nå°æ•°æ®æµ‹è¯• (64å­—èŠ‚):\n";
 
-    // »ù´¡°æ±¾¼ÓÃÜ
+    // åŸºç¡€ç‰ˆæœ¬åŠ å¯†
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < TEST_ITERATIONS; ++i) {
         sm4_gcm_encrypt_basic(&ctx_basic, small_plain, SMALL_DATA_SIZE,
@@ -594,7 +594,7 @@ void benchmark_sm4_gcm() {
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     double avg_encrypt_basic_ns = static_cast<double>(duration) / TEST_ITERATIONS;
 
-    // ÓÅ»¯°æ±¾¼ÓÃÜ
+    // ä¼˜åŒ–ç‰ˆæœ¬åŠ å¯†
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < TEST_ITERATIONS; ++i) {
         sm4_gcm_encrypt_optimized(&ctx_opt, small_plain, SMALL_DATA_SIZE,
@@ -605,7 +605,7 @@ void benchmark_sm4_gcm() {
     duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     double avg_encrypt_opt_ns = static_cast<double>(duration) / TEST_ITERATIONS;
 
-    // »ù´¡°æ±¾½âÃÜ
+    // åŸºç¡€ç‰ˆæœ¬è§£å¯†
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < TEST_ITERATIONS; ++i) {
         sm4_gcm_decrypt_basic(&ctx_basic, small_cipher_basic, SMALL_DATA_SIZE,
@@ -616,7 +616,7 @@ void benchmark_sm4_gcm() {
     duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     double avg_decrypt_basic_ns = static_cast<double>(duration) / TEST_ITERATIONS;
 
-    // ÓÅ»¯°æ±¾½âÃÜ
+    // ä¼˜åŒ–ç‰ˆæœ¬è§£å¯†
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < TEST_ITERATIONS; ++i) {
         sm4_gcm_decrypt_optimized(&ctx_opt, small_cipher_opt, SMALL_DATA_SIZE,
@@ -627,21 +627,21 @@ void benchmark_sm4_gcm() {
     duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     double avg_decrypt_opt_ns = static_cast<double>(duration) / TEST_ITERATIONS;
 
-    // Êä³öĞ¡Êı¾İ²âÊÔ½á¹û
-    std::cout << "¼ÓÃÜÑÓ³Ù:\n";
-    std::cout << "  »ù´¡°æ±¾: " << std::fixed << std::setprecision(2) << avg_encrypt_basic_ns << " ns\n";
-    std::cout << "  ÓÅ»¯°æ±¾: " << std::fixed << std::setprecision(2) << avg_encrypt_opt_ns << " ns (";
+    // è¾“å‡ºå°æ•°æ®æµ‹è¯•ç»“æœ
+    std::cout << "åŠ å¯†å»¶è¿Ÿ:\n";
+    std::cout << "  åŸºç¡€ç‰ˆæœ¬: " << std::fixed << std::setprecision(2) << avg_encrypt_basic_ns << " ns\n";
+    std::cout << "  ä¼˜åŒ–ç‰ˆæœ¬: " << std::fixed << std::setprecision(2) << avg_encrypt_opt_ns << " ns (";
     std::cout << std::setprecision(1) << (avg_encrypt_basic_ns / avg_encrypt_opt_ns) << "x faster)\n";
 
-    std::cout << "½âÃÜÑÓ³Ù:\n";
-    std::cout << "  »ù´¡°æ±¾: " << std::fixed << std::setprecision(2) << avg_decrypt_basic_ns << " ns\n";
-    std::cout << "  ÓÅ»¯°æ±¾: " << std::fixed << std::setprecision(2) << avg_decrypt_opt_ns << " ns (";
+    std::cout << "è§£å¯†å»¶è¿Ÿ:\n";
+    std::cout << "  åŸºç¡€ç‰ˆæœ¬: " << std::fixed << std::setprecision(2) << avg_decrypt_basic_ns << " ns\n";
+    std::cout << "  ä¼˜åŒ–ç‰ˆæœ¬: " << std::fixed << std::setprecision(2) << avg_decrypt_opt_ns << " ns (";
     std::cout << std::setprecision(1) << (avg_decrypt_basic_ns / avg_decrypt_opt_ns) << "x faster)\n";
 
-    // ========== ´óÊı¾İ²âÊÔ ==========
-    std::cout << "\n´óÊı¾İ²âÊÔ (1MB):\n";
+    // ========== å¤§æ•°æ®æµ‹è¯• ==========
+    std::cout << "\nå¤§æ•°æ®æµ‹è¯• (1MB):\n";
 
-    // »ù´¡°æ±¾¼ÓÃÜ
+    // åŸºç¡€ç‰ˆæœ¬åŠ å¯†
     start = std::chrono::high_resolution_clock::now();
     sm4_gcm_encrypt_basic(&ctx_basic, large_plain, LARGE_DATA_SIZE,
         large_cipher_basic, aad, 32, tag_basic);
@@ -649,7 +649,7 @@ void benchmark_sm4_gcm() {
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     double encrypt_basic_throughput = (LARGE_DATA_SIZE / (1024.0 * 1024.0)) / (duration / 1000000.0);
 
-    // ÓÅ»¯°æ±¾¼ÓÃÜ
+    // ä¼˜åŒ–ç‰ˆæœ¬åŠ å¯†
     start = std::chrono::high_resolution_clock::now();
     sm4_gcm_encrypt_optimized(&ctx_opt, large_plain, LARGE_DATA_SIZE,
         large_cipher_opt, aad, 32, tag_opt);
@@ -657,7 +657,7 @@ void benchmark_sm4_gcm() {
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     double encrypt_opt_throughput = (LARGE_DATA_SIZE / (1024.0 * 1024.0)) / (duration / 1000000.0);
 
-    // »ù´¡°æ±¾½âÃÜ
+    // åŸºç¡€ç‰ˆæœ¬è§£å¯†
     start = std::chrono::high_resolution_clock::now();
     sm4_gcm_decrypt_basic(&ctx_basic, large_cipher_basic, LARGE_DATA_SIZE,
         large_decrypted_basic, aad, 32, tag_basic);
@@ -665,7 +665,7 @@ void benchmark_sm4_gcm() {
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     double decrypt_basic_throughput = (LARGE_DATA_SIZE / (1024.0 * 1024.0)) / (duration / 1000000.0);
 
-    // ÓÅ»¯°æ±¾½âÃÜ
+    // ä¼˜åŒ–ç‰ˆæœ¬è§£å¯†
     start = std::chrono::high_resolution_clock::now();
     sm4_gcm_decrypt_optimized(&ctx_opt, large_cipher_opt, LARGE_DATA_SIZE,
         large_decrypted_opt, aad, 32, tag_opt);
@@ -673,18 +673,18 @@ void benchmark_sm4_gcm() {
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     double decrypt_opt_throughput = (LARGE_DATA_SIZE / (1024.0 * 1024.0)) / (duration / 1000000.0);
 
-    // Êä³ö´óÊı¾İ²âÊÔ½á¹û
-    std::cout << "¼ÓÃÜÍÌÍÂÁ¿:\n";
-    std::cout << "  »ù´¡°æ±¾: " << std::fixed << std::setprecision(2) << encrypt_basic_throughput << " MB/s\n";
-    std::cout << "  ÓÅ»¯°æ±¾: " << std::fixed << std::setprecision(2) << encrypt_opt_throughput << " MB/s (";
+    // è¾“å‡ºå¤§æ•°æ®æµ‹è¯•ç»“æœ
+    std::cout << "åŠ å¯†ååé‡:\n";
+    std::cout << "  åŸºç¡€ç‰ˆæœ¬: " << std::fixed << std::setprecision(2) << encrypt_basic_throughput << " MB/s\n";
+    std::cout << "  ä¼˜åŒ–ç‰ˆæœ¬: " << std::fixed << std::setprecision(2) << encrypt_opt_throughput << " MB/s (";
     std::cout << std::setprecision(1) << (encrypt_opt_throughput / encrypt_basic_throughput) << "x faster)\n";
 
-    std::cout << "½âÃÜÍÌÍÂÁ¿:\n";
-    std::cout << "  »ù´¡°æ±¾: " << std::fixed << std::setprecision(2) << decrypt_basic_throughput << " MB/s\n";
-    std::cout << "  ÓÅ»¯°æ±¾: " << std::fixed << std::setprecision(2) << decrypt_opt_throughput << " MB/s (";
+    std::cout << "è§£å¯†ååé‡:\n";
+    std::cout << "  åŸºç¡€ç‰ˆæœ¬: " << std::fixed << std::setprecision(2) << decrypt_basic_throughput << " MB/s\n";
+    std::cout << "  ä¼˜åŒ–ç‰ˆæœ¬: " << std::fixed << std::setprecision(2) << decrypt_opt_throughput << " MB/s (";
     std::cout << std::setprecision(1) << (decrypt_opt_throughput / decrypt_basic_throughput) << "x faster)\n";
 
-    // ÑéÖ¤½âÃÜÕıÈ·ĞÔ
+    // éªŒè¯è§£å¯†æ­£ç¡®æ€§
     bool correct_basic = true;
     bool correct_opt = true;
     for (size_t i = 0; i < SMALL_DATA_SIZE; ++i) {
@@ -696,7 +696,7 @@ void benchmark_sm4_gcm() {
         if (large_plain[i] != large_decrypted_opt[i]) correct_opt = false;
     }
 
-    // ÇåÀíÄÚ´æ
+    // æ¸…ç†å†…å­˜
     delete[] small_plain;
     delete[] small_cipher_basic;
     delete[] small_cipher_opt;
@@ -709,15 +709,15 @@ void benchmark_sm4_gcm() {
     delete[] large_decrypted_opt;
 }
 
-// Ö÷º¯Êı
+// ä¸»å‡½æ•°
 int main() {
-    // »ù±¾¹¦ÄÜ²âÊÔ
+    // åŸºæœ¬åŠŸèƒ½æµ‹è¯•
     uint8_t key[16] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
                       0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
     uint8_t iv[12] = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
                      0x99, 0xaa, 0xbb, 0xcc };
-    uint8_t aad[32] = { 0 }; // 32×Ö½Ú¸½¼ÓÈÏÖ¤Êı¾İ
-    uint8_t plaintext[64] = { 0 }; // 64×Ö½Ú²âÊÔÃ÷ÎÄ
+    uint8_t aad[32] = { 0 }; // 32å­—èŠ‚é™„åŠ è®¤è¯æ•°æ®
+    uint8_t plaintext[64] = { 0 }; // 64å­—èŠ‚æµ‹è¯•æ˜æ–‡
     uint8_t ciphertext_basic[64] = { 0 };
     uint8_t ciphertext_opt[64] = { 0 };
     uint8_t decrypted_basic[64] = { 0 };
@@ -725,7 +725,7 @@ int main() {
     uint8_t tag_basic[16] = { 0 };
     uint8_t tag_opt[16] = { 0 };
 
-    // Ìî³ä²âÊÔÊı¾İ
+    // å¡«å……æµ‹è¯•æ•°æ®
     for (int i = 0; i < 64; i++) {
         plaintext[i] = i;
     }
@@ -735,21 +735,21 @@ int main() {
 
     sm4_gcm_ctx ctx_basic, ctx_opt;
 
-    std::cout << "================ SM4-GCM ¹¦ÄÜ²âÊÔ ================\n";
+    std::cout << "================ SM4-GCM åŠŸèƒ½æµ‹è¯• ================\n";
 
-    // ³õÊ¼»¯ÉÏÏÂÎÄ
-    sm4_gcm_init(&ctx_basic, key, iv, 12, false); // »ù´¡°æ±¾
-    sm4_gcm_init(&ctx_opt, key, iv, 12, true);    // ÓÅ»¯°æ±¾
+    // åˆå§‹åŒ–ä¸Šä¸‹æ–‡
+    sm4_gcm_init(&ctx_basic, key, iv, 12, false); // åŸºç¡€ç‰ˆæœ¬
+    sm4_gcm_init(&ctx_opt, key, iv, 12, true);    // ä¼˜åŒ–ç‰ˆæœ¬
 
-    // »ù´¡°æ±¾¼ÓÃÜ½âÃÜ
+    // åŸºç¡€ç‰ˆæœ¬åŠ å¯†è§£å¯†
     sm4_gcm_encrypt_basic(&ctx_basic, plaintext, 64, ciphertext_basic, aad, 32, tag_basic);
     sm4_gcm_decrypt_basic(&ctx_basic, ciphertext_basic, 64, decrypted_basic, aad, 32, tag_basic);
 
-    // ÓÅ»¯°æ±¾¼ÓÃÜ½âÃÜ
+    // ä¼˜åŒ–ç‰ˆæœ¬åŠ å¯†è§£å¯†
     sm4_gcm_encrypt_optimized(&ctx_opt, plaintext, 64, ciphertext_opt, aad, 32, tag_opt);
     sm4_gcm_decrypt_optimized(&ctx_opt, ciphertext_opt, 64, decrypted_opt, aad, 32, tag_opt);
 
-    // ÑéÖ¤½á¹û
+    // éªŒè¯ç»“æœ
     bool basic_ok = true;
     bool opt_ok = true;
     for (int i = 0; i < 64; i++) {
@@ -757,7 +757,7 @@ int main() {
         if (plaintext[i] != decrypted_opt[i]) opt_ok = false;
     }
 
-    // ÔËĞĞĞÔÄÜ²âÊÔ
+    // è¿è¡Œæ€§èƒ½æµ‹è¯•
     benchmark_sm4_gcm();
 
     return 0;
