@@ -7,7 +7,7 @@
 
 #define ROTL32(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
 
-// SM3Ëã·¨ÊµÏÖ
+// SM3ç®—æ³•å®ç°
 static const uint32_t IV[8] = {
     0x7380166f, 0x4914b2b9, 0x172442d7, 0xda8a0600,
     0x5a63e28c, 0x2f5f1b22, 0x3b101e6d, 0x9b4e430d
@@ -78,8 +78,8 @@ void sm3(const uint8_t* input, size_t len, uint8_t* output) {
     }
 }
 
-// ===================== ĞÔÄÜ²âÊÔ´úÂë =====================
-// Éú³ÉËæ»ú²âÊÔÊı¾İ
+// ===================== æ€§èƒ½æµ‹è¯•ä»£ç  =====================
+// ç”Ÿæˆéšæœºæµ‹è¯•æ•°æ®
 std::vector<uint8_t> generate_random_data(size_t size) {
     std::vector<uint8_t> data(size);
     std::random_device rd;
@@ -91,18 +91,18 @@ std::vector<uint8_t> generate_random_data(size_t size) {
     return data;
 }
 
-// ²âÊÔº¯Êı
+// æµ‹è¯•å‡½æ•°
 void performance_test(size_t data_size, int iterations) {
     auto data = generate_random_data(data_size);
     uint8_t hash[32];
 
-    // Ô¤ÈÈ£¨±ÜÃâÀäÆô¶¯Îó²î£©
+    // é¢„çƒ­ï¼ˆé¿å…å†·å¯åŠ¨è¯¯å·®ï¼‰
     sm3(data.data(), data.size(), hash);
 
-    // ¿ªÊ¼¼ÆÊ±
+    // å¼€å§‹è®¡æ—¶
     auto start = std::chrono::high_resolution_clock::now();
 
-    // ¶à´Îµü´ú¼ÆËã
+    // å¤šæ¬¡è¿­ä»£è®¡ç®—
     for (int i = 0; i < iterations; i++) {
         sm3(data.data(), data.size(), hash);
     }
@@ -110,26 +110,26 @@ void performance_test(size_t data_size, int iterations) {
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-    // ¼ÆËã½á¹û
+    // è®¡ç®—ç»“æœ
     double total_bytes = static_cast<double>(data_size) * iterations;
     double total_seconds = duration / 1e6;
     double speed_mbps = (total_bytes * 8) / (total_seconds * 1e6);
 
-    // ´òÓ¡½á¹û
+    // æ‰“å°ç»“æœ
     std::cout << "==============================\n";
-    std::cout << "ĞÔÄÜ²âÊÔ±¨¸æ\n";
-    std::cout << "Êı¾İ¿é´óĞ¡: " << data_size << " bytes\n";
-    std::cout << "µü´ú´ÎÊı: " << iterations << "\n";
-    std::cout << "×Ü´¦ÀíÊı¾İ: " << total_bytes / (1024 * 1024) << " MB\n";
-    std::cout << "×ÜºÄÊ±: " << total_seconds << " Ãë\n";
-    std::cout << "¹şÏ£ËÙ¶È: " << speed_mbps << " Mbps\n";
-    std::cout << "Æ½¾ùºÄÊ±: " << duration / iterations << " Î¢Ãë/´Î\n";
+    std::cout << "æ€§èƒ½æµ‹è¯•æŠ¥å‘Š\n";
+    std::cout << "æ•°æ®å—å¤§å°: " << data_size << " bytes\n";
+    std::cout << "è¿­ä»£æ¬¡æ•°: " << iterations << "\n";
+    std::cout << "æ€»å¤„ç†æ•°æ®: " << total_bytes / (1024 * 1024) << " MB\n";
+    std::cout << "æ€»è€—æ—¶: " << total_seconds << " ç§’\n";
+    std::cout << "å“ˆå¸Œé€Ÿåº¦: " << speed_mbps << " Mbps\n";
+    std::cout << "å¹³å‡è€—æ—¶: " << duration / iterations << " å¾®ç§’/æ¬¡\n";
 }
 
 
-// Ö÷²âÊÔº¯Êı
+// ä¸»æµ‹è¯•å‡½æ•°
 int main() {
-    // »ù´¡²âÊÔ£¨ÑéÖ¤ÕıÈ·ĞÔ£©
+    // åŸºç¡€æµ‹è¯•ï¼ˆéªŒè¯æ­£ç¡®æ€§ï¼‰
     const char* test_str = "abc";
     uint8_t hash[32];
     sm3(reinterpret_cast<const uint8_t*>(test_str), strlen(test_str), hash);
@@ -140,11 +140,12 @@ int main() {
     }
     std::cout << std::dec << "\n\n";
 
-    // ĞÔÄÜ²âÊÔ£¨²»Í¬Êı¾İ¹æÄ££©
-    performance_test(1 * 1024, 10000);       // 1KBÊı¾İ²âÊÔ
-    performance_test(10 * 1024, 1000);       // 10KBÊı¾İ²âÊÔ
-    performance_test(100 * 1024, 100);       // 100KBÊı¾İ²âÊÔ
-    performance_test(1 * 1024 * 1024, 10);   // 1MBÊı¾İ²âÊÔ
+    // æ€§èƒ½æµ‹è¯•ï¼ˆä¸åŒæ•°æ®è§„æ¨¡ï¼‰
+    performance_test(1 * 1024, 10000);       // 1KBæ•°æ®æµ‹è¯•
+    performance_test(10 * 1024, 1000);       // 10KBæ•°æ®æµ‹è¯•
+    performance_test(100 * 1024, 100);       // 100KBæ•°æ®æµ‹è¯•
+    performance_test(1 * 1024 * 1024, 10);   // 1MBæ•°æ®æµ‹è¯•
 
     return 0;
+
 }
