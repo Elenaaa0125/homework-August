@@ -168,15 +168,14 @@ class SignatureMisuseDemo:
 
 
 if __name__ == '__main__':
-    # 使用小参数进行演示(实际应用应使用标准曲线参数)
     demo = SignatureMisuseDemo(
         a=5, b=7, p=9,  # 曲线参数
         G=[5, 1],  # 基点
         n=11  # 基点阶数
     )
 
-    # 执行所有场景演示
     demo.demonstrate_k_leakage()
     demo.demonstrate_k_reuse()
     demo.demonstrate_shared_k()
+
     demo.demonstrate_mixed_signatures()
