@@ -38,6 +38,8 @@ class SM2Base:
   ```
 
 ### 优化版本1：预计算加速（SM2Optimized1）
+
+预计算是一种空间换时间的优化策略，通过预先计算并存储一些频繁使用的中间结果，来减少实时计算时的运算量。
 ```python
 class SM2Optimized1(SM2Base):
     def __init__(self):
@@ -55,6 +57,7 @@ class SM2Optimized1(SM2Base):
 
 
 ### 优化版本2：Jacobian坐标（SM2Optimized2）
+Jacobian坐标是射影坐标的一种，通过增加一个坐标维度(z坐标)来表示二维仿射平面上的点，可以避免模逆运算(模逆运算在密码学中计算代价很高)。
 ```python
 class SM2Optimized2(SM2Base):
     def jacobian_add(self, P: Tuple[int,int,int], Q: Tuple[int,int,int]):
