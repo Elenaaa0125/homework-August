@@ -17,7 +17,7 @@
 
 ## 算法实现
 
-### 1. 基础实现（SM2Base）
+### 基础实现（SM2Base）
 ```python
 class SM2Base:
     # 国标推荐参数（256位素数域）
@@ -80,7 +80,7 @@ class SM2Optimized2(SM2Base):
   ```
 ## 实验过程
 
-### 1. 功能测试
+### 功能测试
 ```python
 def test_sign_verify():
     msg = b"Test message"
@@ -97,7 +97,7 @@ def test_sign_verify():
 ```
 
 
-### 2. 性能测试方案
+### 性能测试方案
 ```python
 def benchmark():
     setup = '''
@@ -117,3 +117,4 @@ priv, pub = sm2.generate_keypair()
 ```
 ## 实验结果
 
+![测试结果对比图](屏幕截图%202025-08-11%20155124.png) 
