@@ -133,7 +133,7 @@ class EllipticCurveDSA:
 
 # 测试用例
 if __name__ == "__main__":
-    # 初始化曲线参数 (使用小参数仅用于演示)
+    # 初始化曲线参数 
     curve = EllipticCurveDSA(
         a=2, b=3,
         prime=17,
@@ -159,4 +159,5 @@ if __name__ == "__main__":
         r, s, e = forged
         print(f"\n伪造的签名(r,s): ({r}, {s})")
         print(f"对应的伪造消息哈希e: {e}")
+
         print("验证伪造签名:", curve.verify_signature(str(e), (r, s), public_key))
